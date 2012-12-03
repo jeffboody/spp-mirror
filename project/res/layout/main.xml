@@ -1,13 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Hello World, SPPMirror"
-    />
-</LinearLayout>
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content">
 
+	<TextView android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="SPP MAC Address"/>
+
+	<EditText android:id="@+id/ID_SPP_MACADDR"
+	          android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="00:06:66:05:03:A8"/>
+
+	<TextView android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="Net Port"/>
+
+	<EditText android:id="@+id/ID_NET_PORT"
+	          android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="6800"/>
+
+	<TextView android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="Link"/>
+
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	              android:orientation="horizontal"
+	              android:layout_width="fill_parent"
+	              android:layout_height="fill_parent">
+
+		<Button android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:text="Connect"
+		        android:onClick="onConnectLink"/>
+
+		<Button android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:text="Disconnect"
+		        android:onClick="onDisconnectLink"/>
+
+	</LinearLayout>
+
+	<TextView android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="Status"/>
+
+	<TextView android:id="@+id/ID_STATUS"
+	          android:layout_width="fill_parent"
+	          android:layout_height="wrap_content"
+	          android:text="Waiting for sync"/>
+
+</LinearLayout>

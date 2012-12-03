@@ -61,7 +61,7 @@ public class SPPMirrorService extends Service
 		Log.i(TAG, "onSync");
 
 		Intent intent = new Intent("com.jeffboody.SPPMirror.action.STATUS");
-		intent.putExtra("status", "SPP: stopped\nNET: stopped\nrx: 0B\ntx: 0B");
+		intent.putExtra("status", "SPP: stopped\nNET: stopped\nRX: 0B\nTX: 0B");
 		sendBroadcast(intent);
 	}
 

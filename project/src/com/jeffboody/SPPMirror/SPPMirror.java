@@ -9,6 +9,9 @@ import android.os.IBinder;
 import android.app.Activity;
 import android.util.Log;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.EditText;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.content.Intent;
@@ -25,6 +28,11 @@ public class SPPMirror extends Activity implements ServiceConnection
 	private SPPMirrorServiceBinder     mBinder;
 	private SPPMirrorBroadcastReceiver mBroadcastReceiver;
 	private IntentFilter               mIntentFilter;
+
+	// UI
+	private TextView mTextViewStatus;
+	private EditText mEditTextSPPMacAddr;
+	private EditText mEditTextNetPort;
 
 	public SPPMirror()
 	{
@@ -44,6 +52,10 @@ public class SPPMirror extends Activity implements ServiceConnection
 		startService(mIntent);
 
 		setContentView(R.layout.main);
+
+		mTextViewStatus     = (TextView) findViewById(R.id.ID_STATUS);
+		mEditTextSPPMacAddr = (EditText) findViewById(R.id.ID_SPP_MACADDR);
+		mEditTextNetPort    = (EditText) findViewById(R.id.ID_NET_PORT);
 	}
 
 	@Override
@@ -104,6 +116,20 @@ public class SPPMirror extends Activity implements ServiceConnection
 	}
 
 	/*
+	 * buttons
+	 */
+
+	public void onConnectLink(View view)
+	{
+		Log.i(TAG, "onConnectLink");
+	}
+
+	public void onDisconnectLink(View view)
+	{
+		Log.i(TAG, "onDisconnectLink");
+	}
+
+	/*
 	 * broadcast receiver implementation
 	 */
 
@@ -131,5 +157,6 @@ public class SPPMirror extends Activity implements ServiceConnection
 
 	public void updateStatus(String status)
 	{
+		mTextViewStatus.setText(status);
 	}
 }

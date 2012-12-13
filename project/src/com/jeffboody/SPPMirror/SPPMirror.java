@@ -122,11 +122,25 @@ public class SPPMirror extends Activity implements ServiceConnection
 	public void onConnectLink(View view)
 	{
 		Log.i(TAG, "onConnectLink");
+		if(mBinder != null)
+		{
+			String addr = mEditTextSPPMacAddr.getText().toString();
+			int    port = 6800;
+
+			try { port = Integer.parseInt(mEditTextNetPort.getText().toString()); }
+			catch(Exception e) { }
+
+			mBinder.onConnectLink(addr, port);
+		}
 	}
 
 	public void onDisconnectLink(View view)
 	{
 		Log.i(TAG, "onDisconnectLink");
+		if(mBinder != null)
+		{
+			mBinder.onDisconnectLink();
+		}
 	}
 
 	/*

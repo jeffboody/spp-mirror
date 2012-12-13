@@ -21,8 +21,10 @@ public class SPPMirrorService extends Service
 	private boolean      mIsConnected;
 	private BlueSmirfSPP mSPP;
 	private SPPNetSocket mNet;
-	private int mRxCount;
-	private int mTxCount;
+	private int          mRxCount;
+	private int          mTxCount;
+	private String       mBluetoothAddress;
+	private int          mNetPort;
 
 	public SPPMirrorService()
 	{
@@ -38,7 +40,6 @@ public class SPPMirrorService extends Service
 	public void onCreate()
 	{
 		super.onCreate();
-		Log.i(TAG, "onCreate");
 		mBinder = new SPPMirrorServiceBinder(this);
 		mSPP    = new BlueSmirfSPP();
 		mNet    = new SPPNetSocket();
@@ -48,11 +49,10 @@ public class SPPMirrorService extends Service
 	public void onDestroy()
 	{
 		mNet.disconnect();
-		mNet    = null;
 		mSPP.disconnect();
+		mNet    = null;
 		mSPP    = null;
 		mBinder = null;
-		Log.i(TAG, "onDestroy");
 		super.onDestroy();
 	}
 
@@ -87,13 +87,12 @@ public class SPPMirrorService extends Service
 
 	public void onSync()
 	{
-		Log.i(TAG, "onSync");
-
 		Intent intent = new Intent("com.jeffboody.SPPMirror.action.STATUS");
 		if(mIsConnected)
 		{
 			intent.putExtra("status",
-			                "connected\n" +
+			                "spp: " + (mSPP.isConnected() ? "connected\n" : "listening\n") +
+			                "net: " + (mNet.isConnected() ? "connected\n" : "listening\n") +
 			                "RX: " + mRxCount + "B\n" +
 			                "TX: " + mTxCount + "B");
 		}
@@ -109,40 +108,28 @@ public class SPPMirrorService extends Service
 
 	public void onConnectLink(String addr, int port)
 	{
-		Log.i(TAG, "onConnectLink addr=" + addr + ", port=" + port);
-
 		if(mIsConnected)
 		{
-			Log.e(TAG, "onConnectLink: already connected");
 			return;
 		}
 
-		if((mSPP.connect(addr) == false) ||
-		   (mNet.connect(port) == false))
-		{
-			mSPP.disconnect();
-			mNet.disconnect();
-			return;
-		}
-
-		// TODO - create TX/RX threads
+		// create TX/RX threads
+		mBluetoothAddress = addr;
+		mNetPort          = port;
 		ThreadTX tx = new ThreadTX();
-		ThreadRX rx = new ThreadRX();
-
+		mTxCount = 0;
+		mRxCount = 0;
 		mIsConnected = true;
 		onSync();
 	}
 
 	public void onDisconnectLink()
 	{
-		Log.i(TAG, "onDisconnectLink");
-
-		// TODO - destroy TX/RX threads
-
 		mNet.disconnect();
 		mSPP.disconnect();
-
-		mIsConnected = false;
+		mBluetoothAddress = null;
+		mNetPort          = 0;
+		mIsConnected      = false;
 		onSync();
 	}
 
@@ -160,9 +147,22 @@ public class SPPMirrorService extends Service
 
 		public void run()
 		{
-			Log.i(TAG, "TX starting");
-			mTxCount = 0;
+			// connect to SPP and Net before starting rx thread
+			if(mSPP.connect(mBluetoothAddress) == false)
+			{
+				onDisconnectLink();
+			}
+			onSync();
+			if(mNet.connect(mNetPort) == false)
+			{
+				onDisconnectLink();
+			}
+			onSync();
+			ThreadRX rx = new ThreadRX();
+
 			while(mIsConnected &&
+			      (mNet.isConnected()) &&
+			      (mSPP.isConnected()) &&
 			      (mNet.isError() == false) &&
 			      (mSPP.isError() == false))
 			{
@@ -170,9 +170,23 @@ public class SPPMirrorService extends Service
 				mSPP.writeByte(b);
 				mSPP.flush();
 				++mTxCount;
+
+				// throttle the updates
+				if((mTxCount % 100) == 0)
+				{
+					onSync();
+				}
+			}
+
+			// reached end-of-stream or error
+			if(mIsConnected)
+			{
+				onDisconnectLink();
+			}
+			else
+			{
 				onSync();
 			}
-			Log.i(TAG, "TX stopping");
 		}
 	}
 
@@ -186,9 +200,9 @@ public class SPPMirrorService extends Service
 
 		public void run()
 		{
-			Log.i(TAG, "RX starting");
-			mRxCount = 0;
 			while(mIsConnected &&
+			      (mNet.isConnected()) &&
+			      (mSPP.isConnected()) &&
 			      (mNet.isError() == false) &&
 			      (mSPP.isError() == false))
 			{
@@ -196,9 +210,23 @@ public class SPPMirrorService extends Service
 				mNet.writeByte(b);
 				mNet.flush();
 				++mRxCount;
+
+				// throttle the updates
+				if((mRxCount % 100) == 0)
+				{
+					onSync();
+				}
+			}
+
+			// reached end-of-stream or error
+			if(mIsConnected)
+			{
+				onDisconnectLink();
+			}
+			else
+			{
 				onSync();
 			}
-			Log.i(TAG, "RX stopping");
 		}
 	}
 
@@ -209,7 +237,6 @@ public class SPPMirrorService extends Service
 	@Override
 	public IBinder onBind(Intent intent)
 	{
-		Log.i(TAG, "onBind");
 		return mBinder;
 	}
 }

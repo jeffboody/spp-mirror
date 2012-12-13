@@ -11,20 +11,20 @@
 
 		<TextView android:layout_width="fill_parent"
 		          android:layout_height="wrap_content"
-		          android:text="Spam1"/>
+		          android:text="Configuration"/>
+
+		<Button android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:text="Bluetooth Settings"
+		        android:onClick="onBluetoothSettings"/>
 
 		<TextView android:layout_width="fill_parent"
 		          android:layout_height="wrap_content"
-		          android:text="Spam2"/>
+		          android:text="Paired device(s)"/>
 
-		<TextView android:layout_width="fill_parent"
-		          android:layout_height="wrap_content"
-		          android:text="SPP MAC Address"/>
-
-		<EditText android:id="@+id/ID_SPP_MACADDR"
-		          android:layout_width="fill_parent"
-		          android:layout_height="wrap_content"
-		          android:text="00:06:66:05:03:A8"/>
+		<Spinner android:id="@+id/ID_PAIRED_DEVICES"
+		         android:layout_width="fill_parent"
+		         android:layout_height="wrap_content"/>
 
 		<TextView android:layout_width="fill_parent"
 		          android:layout_height="wrap_content"
@@ -34,6 +34,27 @@
 		          android:layout_width="fill_parent"
 		          android:layout_height="wrap_content"
 		          android:text="6800"/>
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Service"/>
+
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		              android:orientation="horizontal"
+		              android:layout_width="fill_parent"
+		              android:layout_height="fill_parent">
+
+			<Button android:layout_height="wrap_content"
+			        android:layout_width="wrap_content"
+			        android:text="Start"
+			        android:onClick="onStartService"/>
+
+			<Button android:layout_height="wrap_content"
+			        android:layout_width="wrap_content"
+			        android:text="Stop"
+			        android:onClick="onStopService"/>
+
+		</LinearLayout>
 
 		<TextView android:layout_width="fill_parent"
 		          android:layout_height="wrap_content"

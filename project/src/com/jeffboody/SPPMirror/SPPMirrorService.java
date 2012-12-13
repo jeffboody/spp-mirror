@@ -54,6 +54,14 @@ public class SPPMirrorService extends Service
 		{
 			mService.onSync();
 		}
+
+		public void onConnectLink(String addr, int port)
+		{
+		}
+
+		public void onDisconnectLink()
+		{
+		}
 	}
 
 	public void onSync()

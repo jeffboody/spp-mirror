@@ -180,6 +180,10 @@ public class SPPNetSocket
 		try
 		{
 			b = mInputStream.read();
+			if(b == -1)
+			{
+				disconnect();
+			}
 		}
 		catch (Exception e)
 		{

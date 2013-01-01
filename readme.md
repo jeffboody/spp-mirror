@@ -24,7 +24,11 @@ For more information on uploading sketches wirelessly via Bluetooth see this
 Note that I found that many bootloaders implement the "Adaboot no-wait mod"
 which bypasses the bootloader when the Arduino is reset by the watchdog
 timer. This prevents the DTR pin workaround using the watchdog timer from
-soft reseting the Arduino into the bootloader.
+soft reseting the Arduino into the bootloader.  It is also required
+for Arduino and Bluesmirf to agree on the baud rate. I recommend using the
+Optiboot bootloader which sets the baud rate to 192000 matching the default
+used by Bluesmirf. The baud rate for the default bootloader shipped with
+many Arduinos is 57600.
 
 The Bluesmirf Bluetooth module is available from Sparkfun.
 
@@ -133,28 +137,25 @@ Build the blink sketch
 Connect the Blink circuit to Bluetooth
 --------------------------------------
 
-	1. build standard blink circuit
-	2. connect Bluesmirf power and ground
-	3. connect Bluesmirf TX to Arduino RX
-	4. connect Bluesmirf RX to Arduino TX
-	5. connect Bluesmirf CTS to Bluesmirf RTS
+1. build standard blink circuit
+2. connect Bluesmirf power and ground
+3. connect Bluesmirf TX to Arduino RX
+4. connect Bluesmirf RX to Arduino TX
+5. connect Bluesmirf CTS to Bluesmirf RTS
 
 Upload procedure
 ----------------
 
 Since the Bluesmirf is not capable of automatically reseting the Arduino we
-must manually reset the Arduino to enter the bootloader. It is also required
-for Arduino and Bluesmirf to agree on the baud rate. I recommend using the
-Optiboot bootloader which sets the baud rate to 192000 matching the default
-used by Bluesmirf. The baud rate for the default bootloader shipped with
-many Arduinos is 57600. See the DTS pin workaround discussion above for more
-information.
+must manually reset the Arduino to enter the bootloader.
 
-	1. start the spp mirror app
-	2. connect to the Bluetooth spp device and ensure net is listening
-	3. switch to terminal
-	4. press Arduino reset button
-	5. wait ~100ms then start upload
+1. start the spp mirror app
+2. connect to the Bluetooth spp device and ensure net is listening
+3. switch to terminal
+4. press Arduino reset button
+5. wait ~100ms then start upload
+
+avrdude upload command:
 
 	avrdude -v -patmega328p -carduino -Pnet:127.0.0.1:6800 -D -Uflash:w:.build/uno/firmware.hex:i
 

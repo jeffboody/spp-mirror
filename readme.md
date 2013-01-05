@@ -26,7 +26,7 @@ which bypasses the bootloader when the Arduino is reset by the watchdog
 timer. This prevents the DTR pin workaround using the watchdog timer from
 soft reseting the Arduino into the bootloader.  It is also required
 for Arduino and Bluesmirf to agree on the baud rate. I recommend using the
-Optiboot bootloader which sets the baud rate to 192000 matching the default
+Optiboot bootloader which sets the baud rate to 115200 matching the default
 used by Bluesmirf. The baud rate for the default bootloader shipped with
 many Arduinos is 57600.
 

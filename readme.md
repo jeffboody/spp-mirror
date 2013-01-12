@@ -120,13 +120,44 @@ Example blink sketch
 Initialize a blink project
 --------------------------
 
+Create an empty project.
+
 	mkdir blink
 	cd blink
 	ino init
-	rm src/sketch.ino
-	
-	# add the famous blink sketch
-	cp Blink.ino blink/src/Blink.ino
+
+Replace src/sketch.ino with this sketch. Notice that serial
+debugging has been added to demonstrate the serial monitor
+via telnet.
+
+	/*
+	  Blink
+	  Turns on an LED on for one second, then off for one second, repeatedly.
+
+	  This example code is in the public domain.
+	 */
+
+	// Pin 13 has an LED connected on most Arduino boards.
+	// give it a name:
+	int led = 13;
+
+	// the setup routine runs once when you press reset:
+	void setup() {
+	  // change baud rate to match Bluetooth device
+	  Serial.begin(115200);
+	  // initialize the digital pin as an output.
+	  pinMode(led, OUTPUT);
+	}
+
+	// the loop routine runs over and over again forever:
+	void loop() {
+	  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+	  Serial.println("HIGH");
+	  delay(1000);               // wait for a second
+	  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+	  Serial.println("LOW");
+	  delay(1000);               // wait for a second
+	}
 
 Build the blink sketch
 -----------------------
@@ -158,6 +189,31 @@ must manually reset the Arduino to enter the bootloader.
 avrdude upload command:
 
 	avrdude -v -patmega328p -carduino -Pnet:127.0.0.1:6800 -D -Uflash:w:.build/uno/firmware.hex:i
+
+Serial Monitor
+--------------
+
+Install the telnet app in Linux-for-Android
+
+	sudo apt-get install telnet
+
+Debugging with telnet
+
+1. start the spp mirror app
+2. connect to the Bluetooth spp device and ensure net is listening
+3. switch to terminal
+4. launch telnet
+
+Telnet command:
+
+	telnet 127.0.0.1 6800
+
+Example output:
+
+	HIGH
+	LOW
+	HIGH
+	LOW
 
 License
 =======

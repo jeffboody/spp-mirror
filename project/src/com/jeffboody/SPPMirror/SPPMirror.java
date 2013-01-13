@@ -34,6 +34,7 @@ import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.widget.CheckBox;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -63,6 +64,7 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 	private Spinner      mSpinnerDevices;
 	private ArrayAdapter mArrayAdapterDevices;
 	private EditText     mEditTextNetPort;
+	private CheckBox     mCheckBoxAutoReconnect;
 
 	public SPPMirror()
 	{
@@ -87,6 +89,7 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 		mEditTextNetPort        = (EditText) findViewById(R.id.ID_NET_PORT);
 		ArrayList<String> items = new ArrayList<String>();
 		mSpinnerDevices         = (Spinner) findViewById(R.id.ID_PAIRED_DEVICES);
+		mCheckBoxAutoReconnect  = (CheckBox) findViewById(R.id.ID_AUTO_RECONNECT);
 		mArrayAdapterDevices    = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
 		mSpinnerDevices.setOnItemSelectedListener(this);
 		mArrayAdapterDevices.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -239,13 +242,15 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 
 	public void onConnectLink(View view)
 	{
+		boolean auto_reconnect = mCheckBoxAutoReconnect.isChecked();
 		int port = 6800;
 		try { port = Integer.parseInt(mEditTextNetPort.getText().toString()); }
 		catch(Exception e) { }
 
+
 		if(mBinder != null)
 		{
-			mBinder.onConnectLink(mBluetoothAddress, port);
+			mBinder.onConnectLink(mBluetoothAddress, port, auto_reconnect);
 		}
 	}
 
@@ -291,7 +296,6 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 		}
 		else
 		{
-			Log.i(TAG, status);
 			mTextViewStatus.setText(status);
 		}
 	}

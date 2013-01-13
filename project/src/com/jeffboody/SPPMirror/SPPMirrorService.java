@@ -41,6 +41,7 @@ public class SPPMirrorService extends Service
 	private SPPMirrorServiceBinder mBinder;
 
 	private boolean      mIsConnected;
+	private boolean      mAutoReconnect;
 	private BlueSmirfSPP mSPP;
 	private SPPNetSocket mNet;
 	private int          mRxCount;
@@ -52,12 +53,13 @@ public class SPPMirrorService extends Service
 
 	public SPPMirrorService()
 	{
-		mIsConnected = false;
-		mBinder      = null;
-		mSPP         = null;
-		mNet         = null;
-		mRxCount     = 0;
-		mTxCount     = 0;
+		mIsConnected   = false;
+		mAutoReconnect = false;
+		mBinder        = null;
+		mSPP           = null;
+		mNet           = null;
+		mRxCount       = 0;
+		mTxCount       = 0;
 	}
 
 	@Override
@@ -106,9 +108,9 @@ public class SPPMirrorService extends Service
 			mService.onSync();
 		}
 
-		public void onConnectLink(String addr, int port)
+		public void onConnectLink(String addr, int port, boolean auto_reconnect)
 		{
-			mService.onConnectLink(addr, port);
+			mService.onConnectLink(addr, port, auto_reconnect);
 		}
 
 		public void onDisconnectLink()
@@ -120,25 +122,31 @@ public class SPPMirrorService extends Service
 	public void onSync()
 	{
 		Intent intent = new Intent("com.jeffboody.SPPMirror.action.STATUS");
-		if(mIsConnected)
+		String msg;
+		if(mIsConnected && mSPP.isConnected())
 		{
-			intent.putExtra("status",
-			                "spp: " + (mSPP.isConnected() ? "connected\n" : "listening\n") +
-			                "net: " + (mNet.isConnected() ? "connected\n" : "listening\n") +
-			                "RX: " + mRxCount + "B\n" +
-			                "TX: " + mTxCount + "B");
+			msg = "spp: " + (mSPP.isConnected() ? "connected\n" : "listening\n") +
+			      "net: " + (mNet.isConnected() ? "connected\n" : "listening\n") +
+			      "RX: " + mRxCount + "B\n" +
+			      "TX: " + mTxCount + "B";
+		}
+		else if(mIsConnected)
+		{
+			msg = "spp: " + (mSPP.isConnected() ? "connected\n" : "listening\n") +
+			      "RX: " + mRxCount + "B\n" +
+			      "TX: " + mTxCount + "B";
 		}
 		else
 		{
-			intent.putExtra("status",
-			                "disconnected\n" +
-			                "RX: " + mRxCount + "B\n" +
-			                "TX: " + mTxCount + "B");
+			msg = "disconnected\n" +
+			      "RX: " + mRxCount + "B\n" +
+			      "TX: " + mTxCount + "B";
 		}
+		intent.putExtra("status", msg);
 		sendBroadcast(intent);
 	}
 
-	public void onConnectLink(String addr, int port)
+	public void onConnectLink(String addr, int port, boolean auto_reconnect)
 	{
 		if(mIsConnected)
 		{
@@ -148,10 +156,9 @@ public class SPPMirrorService extends Service
 		// create TX/RX threads
 		mBluetoothAddress = addr;
 		mNetPort          = port;
-		ThreadTX tx = new ThreadTX();
-		mTxCount = 0;
-		mRxCount = 0;
-		mIsConnected = true;
+		mIsConnected      = true;
+		mAutoReconnect    = auto_reconnect;
+		ThreadTX tx       = new ThreadTX();
 		onSync();
 	}
 
@@ -182,48 +189,60 @@ public class SPPMirrorService extends Service
 			long t0       = System.currentTimeMillis();
 			byte[] buffer = new byte[4096];
 
-			// connect to SPP and Net before starting rx thread
-			if(mSPP.connect(mBluetoothAddress) == false)
+			do
 			{
-				onDisconnectLink();
-			}
-			onSync();
-			if(mNet.connect(mNetPort) == false)
-			{
-				onDisconnectLink();
-			}
-			onSync();
-			ThreadRX rx = new ThreadRX();
+				mTxCount = 0;
+				mRxCount = 0;
 
-			while(mIsConnected &&
-			      (mNet.isConnected()) &&
-			      (mSPP.isConnected()) &&
-			      (mNet.isError() == false) &&
-			      (mSPP.isError() == false))
-			{
-				int count = mNet.read(buffer, 0, 4096);
-				mSPP.write(buffer, 0, count);
-				mSPP.flush();
-				mTxCount += count;
-
-				// throttle the updates
-				long t1 = System.currentTimeMillis();
-				if((t1 - t0) > 250)
-				{
-					onSync();
-					t0 = t1;
-				}
-			}
-
-			// reached end-of-stream or error
-			if(mIsConnected)
-			{
-				onDisconnectLink();
-			}
-			else
-			{
+				// connect to SPP and Net before starting rx thread
 				onSync();
-			}
+				if(mSPP.connect(mBluetoothAddress) == false)
+				{
+					continue;
+				}
+				onSync();
+				if(mNet.connect(mNetPort) == false)
+				{
+					mSPP.disconnect();
+					continue;
+				}
+				onSync();
+				ThreadRX rx = new ThreadRX();
+
+				while(mIsConnected &&
+				      (mNet.isConnected()) &&
+				      (mSPP.isConnected()) &&
+				      (mNet.isError() == false) &&
+				      (mSPP.isError() == false))
+				{
+					int count = mNet.read(buffer, 0, 4096);
+					mSPP.write(buffer, 0, count);
+					mSPP.flush();
+					mTxCount += count;
+
+					// throttle the updates
+					long t1 = System.currentTimeMillis();
+					if((t1 - t0) > 250)
+					{
+						onSync();
+						t0 = t1;
+					}
+				}
+
+				// reached end-of-stream or error
+				if(mIsConnected)
+				{
+					mNet.disconnect();
+					mSPP.disconnect();
+				}
+				onSync();
+
+				if(mAutoReconnect && mIsConnected)
+				{
+					try { Thread.sleep((long) 1000); }
+					catch(InterruptedException e) { }
+				}
+			} while(mAutoReconnect && mIsConnected);
 		}
 	}
 
@@ -263,12 +282,10 @@ public class SPPMirrorService extends Service
 			// reached end-of-stream or error
 			if(mIsConnected)
 			{
-				onDisconnectLink();
+				mNet.disconnect();
+				mSPP.disconnect();
 			}
-			else
-			{
-				onSync();
-			}
+			onSync();
 		}
 	}
 

@@ -193,6 +193,30 @@ public class SPPNetSocket
 		}
 	}
 
+	public void write(byte[] buffer, int offset, int count)
+	{
+		try
+		{
+			mOutputStream.write(buffer, offset, count);
+		}
+		catch (Exception e)
+		{
+			mLock.lock();
+			try
+			{
+				if(mIsConnected && (mIsError == false))
+				{
+					Log.e(TAG, "write: " + e);
+					mIsError = true;
+				}
+			}
+			finally
+			{
+				mLock.unlock();
+			}
+		}
+	}
+
 	public int readByte()
 	{
 		int b = 0;
@@ -212,6 +236,36 @@ public class SPPNetSocket
 				if(mIsConnected && (mIsError == false))
 				{
 					Log.e(TAG, "readByte: " + e);
+					mIsError = true;
+				}
+			}
+			finally
+			{
+				mLock.unlock();
+			}
+		}
+		return b;
+	}
+
+	public int read(byte[] buffer, int offset, int length)
+	{
+		int b = 0;
+		try
+		{
+			b = mInputStream.read(buffer, offset, length);
+			if(b == -1)
+			{
+				disconnect();
+			}
+		}
+		catch (Exception e)
+		{
+			mLock.lock();
+			try
+			{
+				if(mIsConnected && (mIsError == false))
+				{
+					Log.e(TAG, "read: " + e);
 					mIsError = true;
 				}
 			}

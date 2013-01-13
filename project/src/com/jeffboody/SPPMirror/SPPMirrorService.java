@@ -179,6 +179,9 @@ public class SPPMirrorService extends Service
 
 		public void run()
 		{
+			long t0       = System.currentTimeMillis();
+			byte[] buffer = new byte[4096];
+
 			// connect to SPP and Net before starting rx thread
 			if(mSPP.connect(mBluetoothAddress) == false)
 			{
@@ -198,15 +201,17 @@ public class SPPMirrorService extends Service
 			      (mNet.isError() == false) &&
 			      (mSPP.isError() == false))
 			{
-				int b = mNet.readByte();
-				mSPP.writeByte(b);
+				int count = mNet.read(buffer, 0, 4096);
+				mSPP.write(buffer, 0, count);
 				mSPP.flush();
-				++mTxCount;
+				mTxCount += count;
 
 				// throttle the updates
-				if((mTxCount % 100) == 0)
+				long t1 = System.currentTimeMillis();
+				if((t1 - t0) > 250)
 				{
 					onSync();
+					t0 = t1;
 				}
 			}
 
@@ -232,21 +237,26 @@ public class SPPMirrorService extends Service
 
 		public void run()
 		{
+			long t0       = System.currentTimeMillis();
+			byte[] buffer = new byte[4096];
+
 			while(mIsConnected &&
 			      (mNet.isConnected()) &&
 			      (mSPP.isConnected()) &&
 			      (mNet.isError() == false) &&
 			      (mSPP.isError() == false))
 			{
-				int b = mSPP.readByte();
-				mNet.writeByte(b);
+				int count = mSPP.read(buffer, 0, 4096);
+				mNet.write(buffer, 0, count);
 				mNet.flush();
-				++mRxCount;
+				mRxCount += count;
 
 				// throttle the updates
-				if((mRxCount % 100) == 0)
+				long t1 = System.currentTimeMillis();
+				if((t1 - t0) > 250)
 				{
 					onSync();
+					t0 = t1;
 				}
 			}
 

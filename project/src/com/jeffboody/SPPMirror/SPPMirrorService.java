@@ -29,6 +29,9 @@ import android.os.IBinder;
 import android.content.Context;
 import android.content.Intent;
 import android.app.Service;
+import android.app.NotificationManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import com.jeffboody.BlueSmirf.BlueSmirfSPP;
 
 public class SPPMirrorService extends Service
@@ -44,6 +47,8 @@ public class SPPMirrorService extends Service
 	private int          mTxCount;
 	private String       mBluetoothAddress;
 	private int          mNetPort;
+
+	private static final int SPP_NOTIFICATION_ID = 42;
 
 	public SPPMirrorService()
 	{
@@ -62,11 +67,19 @@ public class SPPMirrorService extends Service
 		mBinder = new SPPMirrorServiceBinder(this);
 		mSPP    = new BlueSmirfSPP();
 		mNet    = new SPPNetSocket();
+
+		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		Notification n         = new Notification(R.drawable.notify, "SPPMirror", System.currentTimeMillis());
+		PendingIntent pi       = PendingIntent.getActivity(this, 0, new Intent(this, SPPMirror.class), 0);
+		n.setLatestEventInfo(this, "SPPMirror", "running", pi);
+		nm.notify(SPP_NOTIFICATION_ID, n);
 	}
 
 	@Override
 	public void onDestroy()
 	{
+		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		nm.cancel(SPP_NOTIFICATION_ID);
 		mNet.disconnect();
 		mSPP.disconnect();
 		mNet    = null;

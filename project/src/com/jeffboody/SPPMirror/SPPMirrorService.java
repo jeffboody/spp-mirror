@@ -56,8 +56,8 @@ public class SPPMirrorService extends Service
 		mIsConnected   = false;
 		mAutoReconnect = false;
 		mBinder        = null;
-		mSPP           = null;
-		mNet           = null;
+		mSPP           = new BlueSmirfSPP();
+		mNet           = new SPPNetSocket();
 		mRxCount       = 0;
 		mTxCount       = 0;
 	}
@@ -67,8 +67,6 @@ public class SPPMirrorService extends Service
 	{
 		super.onCreate();
 		mBinder = new SPPMirrorServiceBinder(this);
-		mSPP    = new BlueSmirfSPP();
-		mNet    = new SPPNetSocket();
 
 		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		Notification n         = new Notification(R.drawable.notify, "SPPMirror", System.currentTimeMillis());
@@ -84,8 +82,6 @@ public class SPPMirrorService extends Service
 		nm.cancel(SPP_NOTIFICATION_ID);
 		mNet.disconnect();
 		mSPP.disconnect();
-		mNet    = null;
-		mSPP    = null;
 		mBinder = null;
 		super.onDestroy();
 	}

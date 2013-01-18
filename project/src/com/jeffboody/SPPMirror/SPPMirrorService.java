@@ -238,6 +238,11 @@ public class SPPMirrorService extends Service
 					try { Thread.sleep((long) 1000); }
 					catch(InterruptedException e) { }
 				}
+				else
+				{
+					mIsConnected = false;
+				}
+				onSync();
 			} while(mAutoReconnect && mIsConnected);
 		}
 	}
@@ -281,7 +286,6 @@ public class SPPMirrorService extends Service
 				mNet.disconnect();
 				mSPP.disconnect();
 			}
-			onSync();
 		}
 	}
 

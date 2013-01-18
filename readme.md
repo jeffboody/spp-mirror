@@ -9,8 +9,11 @@ normal programming of Arduino devices. To further complicate the
 the issue the Bluetooth serial port is not shared from Android to
 Linux-on-Android. To work around these issues this app runs as a
 service which connects to Arduino over Bluetooth and to the avrdude
-programmer over a TCP socket. The avrdude programming commands are
-forwarded to Arduino over Bluetooth by the Serial Mirror app.
+programmer over a TCP socket. The serial and TCP data are mirrored
+by the Serial Mirror app. As a result the Serial Mirror app is also
+useful for devices which do not have root access. After starting the
+Serial Mirror app you can connect via a telnet app to send and
+receive data from the Bluetooth device.
 
 Linux-on-Android can support the Arduino IDE however I've found that
 the UI is a bit awkward to use due to the touch screen mouse and
@@ -34,6 +37,10 @@ The Bluesmirf Bluetooth module is available from Sparkfun.
 
 * <a href="https://www.sparkfun.com/products/10268">Bluesmirf Gold</a>
 * <a href="https://www.sparkfun.com/products/10269">Bluesmirf Silver</a>
+
+The Serial Mirror is available on the Play Store.
+
+* <a href="https://play.google.com/store/apps/details?id=com.jeffboody.SPPMirror">Serial Mirror</a>
 
 Send questions or comments to Jeff Boody - jeffboody@gmail.com
 
@@ -126,9 +133,10 @@ Create an empty project.
 	cd blink
 	ino init
 
-Replace src/sketch.ino with this sketch. Notice that serial
-debugging has been added to demonstrate the serial monitor
-via telnet.
+Replace src/sketch.ino with this sketch. Note that the
+following blink sketch has been modified to receive the
+blink delay as 'f' for fast and 's' for slow. The leds
+will also report their state over serial.
 
 	/*
 	  Blink
@@ -141,6 +149,9 @@ via telnet.
 	// give it a name:
 	int led = 13;
 
+	// control blink delay over serial
+	int blink_delay = 1000;
+
 	// the setup routine runs once when you press reset:
 	void setup() {
 	  // change baud rate to match Bluetooth device
@@ -151,12 +162,25 @@ via telnet.
 
 	// the loop routine runs over and over again forever:
 	void loop() {
+	  if(Serial.available())
+	  {
+	    int b = Serial.read();
+	    if(b == 'f') {
+	      blink_delay = 100;
+	      Serial.println("FAST");
+	    }
+	    else if(b == 's') {
+	      blink_delay = 1000;
+	      Serial.println("SLOW");
+	    }
+	  }
+
 	  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
 	  Serial.println("HIGH");
-	  delay(1000);               // wait for a second
+	  delay(blink_delay);        // wait for a second
 	  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
 	  Serial.println("LOW");
-	  delay(1000);               // wait for a second
+	  delay(blink_delay);        // wait for a second
 	}
 
 Build the blink sketch
@@ -193,11 +217,11 @@ avrdude upload command:
 Serial Monitor
 --------------
 
-Install the telnet app in Linux-for-Android
+Install the telnet program in Linux-for-Android
 
 	sudo apt-get install telnet
 
-Debugging with telnet
+Debugging with telnet program
 
 1. start the Serial Mirror app
 2. connect to the Bluetooth device and ensure net is listening
@@ -208,12 +232,15 @@ Telnet command:
 
 	telnet 127.0.0.1 6800
 
-Example output:
+Or install the Android telnet app
 
-	HIGH
-	LOW
-	HIGH
-	LOW
+* <a href="https://play.google.com/store/apps/details?id=koushikdutta.telnet">Telnet by ClockworkMod</a>
+
+Debugging with telnet app
+
+1. start the Serial Mirror app
+2. connect to the Bluetooth device and ensure net is listening
+3. launch telnet app and connect to port 6800
 
 License
 =======

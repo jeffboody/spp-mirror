@@ -68,18 +68,16 @@ public class SPPMirrorService extends Service
 		super.onCreate();
 		mBinder = new SPPMirrorServiceBinder(this);
 
-		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		Notification n         = new Notification(R.drawable.notify, "Serial Mirror", System.currentTimeMillis());
-		PendingIntent pi       = PendingIntent.getActivity(this, 0, new Intent(this, SPPMirror.class), 0);
+		Notification n   = new Notification(R.drawable.notify, "Serial Mirror", System.currentTimeMillis());
+		PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, SPPMirror.class), 0);
 		n.setLatestEventInfo(this, "Serial Mirror", "running", pi);
-		nm.notify(SPP_NOTIFICATION_ID, n);
+		startForeground(SPP_NOTIFICATION_ID, n);
 	}
 
 	@Override
 	public void onDestroy()
 	{
-		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		nm.cancel(SPP_NOTIFICATION_ID);
+		stopForeground(true);
 		mNet.disconnect();
 		mSPP.disconnect();
 		mBinder = null;

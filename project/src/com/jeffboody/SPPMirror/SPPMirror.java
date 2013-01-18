@@ -116,12 +116,6 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 				mArrayAdapterDevices.add(device.getName());
 				mArrayListBluetoothAddress.add(device.getAddress());
 			}
-
-			// request that the user selects a device
-			if(mBluetoothAddress == null)
-			{
-				mSpinnerDevices.performClick();
-			}
 		}
 		else
 		{

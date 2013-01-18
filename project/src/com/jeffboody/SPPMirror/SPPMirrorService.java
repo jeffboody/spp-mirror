@@ -69,9 +69,9 @@ public class SPPMirrorService extends Service
 		mBinder = new SPPMirrorServiceBinder(this);
 
 		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		Notification n         = new Notification(R.drawable.notify, "SPPMirror", System.currentTimeMillis());
+		Notification n         = new Notification(R.drawable.notify, "Serial Mirror", System.currentTimeMillis());
 		PendingIntent pi       = PendingIntent.getActivity(this, 0, new Intent(this, SPPMirror.class), 0);
-		n.setLatestEventInfo(this, "SPPMirror", "running", pi);
+		n.setLatestEventInfo(this, "Serial Mirror", "running", pi);
 		nm.notify(SPP_NOTIFICATION_ID, n);
 	}
 

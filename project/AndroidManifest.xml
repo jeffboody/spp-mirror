@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
         <service android:name="com.jeffboody.SPPMirror.SPPMirrorService"
-                 android:label="SPPMirrorService"
+                 android:label="Serial Mirror Service"
                  android:enabled="true"
                  android:exported="true">
             <intent-filter>

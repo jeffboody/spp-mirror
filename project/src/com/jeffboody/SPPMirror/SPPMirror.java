@@ -49,7 +49,7 @@ import com.jeffboody.SPPMirror.SPPMirrorService.SPPMirrorServiceBinder;
 
 public class SPPMirror extends Activity implements ServiceConnection, OnItemSelectedListener
 {
-	private static final String TAG = "SPPMirror";
+	private static final String TAG = "SerialMirror";
 
 	// service state
 	private Intent                     mIntent;

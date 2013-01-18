@@ -10,7 +10,7 @@ the issue the Bluetooth serial port is not shared from Android to
 Linux-on-Android. To work around these issues this app runs as a
 service which connects to Arduino over Bluetooth and to the avrdude
 programmer over a TCP socket. The avrdude programming commands are
-forwarded to Arduino over Bluetooth by the spp-mirror app.
+forwarded to Arduino over Bluetooth by the Serial Mirror app.
 
 Linux-on-Android can support the Arduino IDE however I've found that
 the UI is a bit awkward to use due to the touch screen mouse and
@@ -78,8 +78,8 @@ Clone Project
 	vim profile
 	# edit SDK to point to $ANDROID
 
-Building and installing the spp-mirror app
-==========================================
+Building and installing the Serial Mirror app
+=============================================
 
 	cd $SRC/spp-mirror
 	source profile
@@ -180,8 +180,8 @@ Upload procedure
 Since the Bluesmirf is not capable of automatically reseting the Arduino we
 must manually reset the Arduino to enter the bootloader.
 
-1. start the spp mirror app
-2. connect to the Bluetooth spp device and ensure net is listening
+1. start the Serial Mirror app
+2. connect to the Bluetooth device and ensure net is listening
 3. switch to terminal
 4. press Arduino reset button
 5. wait ~100ms then start upload
@@ -199,8 +199,8 @@ Install the telnet app in Linux-for-Android
 
 Debugging with telnet
 
-1. start the spp mirror app
-2. connect to the Bluetooth spp device and ensure net is listening
+1. start the Serial Mirror app
+2. connect to the Bluetooth device and ensure net is listening
 3. switch to terminal
 4. launch telnet
 

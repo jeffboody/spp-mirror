@@ -33,7 +33,7 @@ import java.net.Socket;
 
 public class SPPNetSocket
 {
-	private static final String TAG = "SPPNetSocket";
+	private static final String TAG = "SerialMirrorSocket";
 
 	// Internal state (protected by lock)
 	private Lock    mLock;

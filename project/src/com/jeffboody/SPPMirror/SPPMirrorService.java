@@ -36,7 +36,7 @@ import com.jeffboody.BlueSmirf.BlueSmirfSPP;
 
 public class SPPMirrorService extends Service
 {
-	private static final String TAG = "SPPMirrorService";
+	private static final String TAG = "SerialMirrorService";
 
 	private SPPMirrorServiceBinder mBinder;
 

@@ -285,7 +285,6 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 	{
 		if(mBinder == null)
 		{
-			Log.i(TAG, "stopped");
 			mTextViewStatus.setText("stopped");
 		}
 		else

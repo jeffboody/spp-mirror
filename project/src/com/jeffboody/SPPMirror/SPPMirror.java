@@ -43,6 +43,7 @@ import android.content.ServiceConnection;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import com.jeffboody.SPPMirror.SPPMirrorService.SPPMirrorServiceBinder;
@@ -50,6 +51,12 @@ import com.jeffboody.SPPMirror.SPPMirrorService.SPPMirrorServiceBinder;
 public class SPPMirror extends Activity implements ServiceConnection, OnItemSelectedListener
 {
 	private static final String TAG = "SerialMirror";
+
+	// persistent state
+	private SharedPreferences mPersist;
+	private String            mLastBluetoothAddress;
+	private String            mLastNetPort;
+	private Boolean           mLastAutoReconnect;
 
 	// service state
 	private Intent                     mIntent;
@@ -83,6 +90,8 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 	{
 		super.onCreate(savedInstanceState);
 
+		mPersist = getSharedPreferences("com.jeffboody.SPPMirror", MODE_PRIVATE);
+
 		// initialize UI
 		setContentView(R.layout.main);
 		mTextViewStatus         = (TextView) findViewById(R.id.ID_STATUS);
@@ -104,6 +113,13 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 	{
 		super.onResume();
 
+		// persistent state
+		mLastBluetoothAddress = mPersist.getString("BT_ADDR", "none");
+		mLastNetPort          = mPersist.getString("NET_PORT", "6800");
+		mLastAutoReconnect    = mPersist.getBoolean("AUTO_RECONNECT", false);
+		mEditTextNetPort.setText(mLastNetPort);
+		mCheckBoxAutoReconnect.setChecked(mLastAutoReconnect);
+
 		// update the paired device(s)
 		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 		Set<BluetoothDevice> devices = adapter.getBondedDevices();
@@ -111,10 +127,18 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 		mArrayListBluetoothAddress.clear();
 		if(devices.size() > 0)
 		{
+			int index = 0;
 			for(BluetoothDevice device : devices)
 			{
 				mArrayAdapterDevices.add(device.getName());
 				mArrayListBluetoothAddress.add(device.getAddress());
+
+				// persistent state
+				if(mLastBluetoothAddress.compareTo(device.getAddress()) == 0)
+				{
+					mSpinnerDevices.setSelection(index);
+				}
+				++index;
 			}
 		}
 		else
@@ -140,6 +164,12 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 
 		try { unregisterReceiver(mBroadcastReceiver); }
 		catch(Exception e) { }
+
+		SharedPreferences.Editor persist = mPersist.edit();
+		persist.putString("BT_ADDR", mLastBluetoothAddress);
+		persist.putString("NET_PORT", mLastNetPort);
+		persist.putBoolean("AUTO_RECONNECT", mLastAutoReconnect);
+		persist.commit();
 
 		super.onPause();
 	}
@@ -236,14 +266,18 @@ public class SPPMirror extends Activity implements ServiceConnection, OnItemSele
 
 	public void onConnectLink(View view)
 	{
-		boolean auto_reconnect = mCheckBoxAutoReconnect.isChecked();
-		int port = 6800;
-		try { port = Integer.parseInt(mEditTextNetPort.getText().toString()); }
-		catch(Exception e) { }
-
-
 		if(mBinder != null)
 		{
+			boolean auto_reconnect = mCheckBoxAutoReconnect.isChecked();
+			int port = 6800;
+			try
+			{
+				mLastNetPort = mEditTextNetPort.getText().toString();
+				port = Integer.parseInt(mLastNetPort);
+			}
+			catch(Exception e) { }
+			mLastBluetoothAddress = mBluetoothAddress;
+			mLastAutoReconnect    = mCheckBoxAutoReconnect.isChecked();
 			mBinder.onConnectLink(mBluetoothAddress, port, auto_reconnect);
 		}
 	}
